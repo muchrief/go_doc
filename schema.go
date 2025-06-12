@@ -102,17 +102,15 @@ func BuildSchema(data interface{}) *Schema {
 
 			dataModel := reflect.Zero(field.Type).Interface()
 
-			switch field.Type.Kind() {
-			case reflect.Pointer:
+			fieldName := helper.GetFieldName(field, "json")
+			if field.Anonymous {
 				newSchema := BuildSchema(dataModel)
 				for key, value := range newSchema.Properties {
 					schema.Properties[key] = value
 				}
 
-			default:
-				fieldName := helper.GetFieldName(field, "json")
+			} else {
 				schemaProperties := BuildSchema(dataModel)
-
 				schema.Properties[fieldName] = schemaProperties
 			}
 		}
@@ -126,8 +124,15 @@ func BuildSchema(data interface{}) *Schema {
 		schema.AdditionalProperties = additionalProperties
 
 	case reflect.Pointer:
+		if schema.Properties == nil {
+			schema.Properties = map[string]*Schema{}
+		}
+
 		dataModel := reflect.Zero(dataType.Elem()).Interface()
-		return BuildSchema(dataModel)
+		newSchema := BuildSchema(dataModel)
+		for key, value := range newSchema.Properties {
+			schema.Properties[key] = value
+		}
 
 	case reflect.Array, reflect.Slice:
 		valueType := dataType.Elem()

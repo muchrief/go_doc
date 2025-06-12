@@ -29,12 +29,22 @@ type UserMapObject struct {
 	UserMapper map[string]*User `json:"user_mapper"`
 }
 
+type PageInfo struct {
+	Page     int `json:"page"`
+	PageSize int `json:"page_size"`
+}
+type Response struct {
+	Message  string    `json:"message"`
+	PageInfo *PageInfo `json:"page_info"`
+}
+
 func TestBuildSchema(t *testing.T) {
 
 	t.Run("test not pointer", func(t *testing.T) {
 		apiError := ApiError{}
 		result := go_doc.BuildSchema(apiError)
 		assert.NotEmpty(t, result)
+		assert.NotEmpty(t, result.Properties)
 
 		// raw, err := json.MarshalIndent(result, "", "	")
 		// assert.Nil(t, err)
@@ -45,6 +55,7 @@ func TestBuildSchema(t *testing.T) {
 		apiError := &ApiError{}
 		result := go_doc.BuildSchema(apiError)
 		assert.NotEmpty(t, result)
+		assert.NotEmpty(t, result.Properties)
 
 		// raw, err := json.MarshalIndent(result, "", "	")
 		// assert.Nil(t, err)
@@ -55,6 +66,21 @@ func TestBuildSchema(t *testing.T) {
 		response := &ApiResponse[map[string]string]{}
 		result := go_doc.BuildSchema(response)
 		assert.NotEmpty(t, result)
+		assert.NotEmpty(t, result.Properties)
+		assert.NotEmpty(t, result.Properties["validation_message"])
+		assert.NotEmpty(t, result.Properties["data"].AdditionalProperties)
+
+		// raw, err := json.MarshalIndent(result, "", "	")
+		// assert.Nil(t, err)
+		// t.Log(string(raw))
+	})
+
+	t.Run("test pointer field", func(t *testing.T) {
+		data := &Response{}
+		result := go_doc.BuildSchema(data)
+		assert.NotEmpty(t, result)
+		assert.NotEmpty(t, result.Properties)
+		assert.NotEmpty(t, result.Properties["page_info"])
 
 		// raw, err := json.MarshalIndent(result, "", "	")
 		// assert.Nil(t, err)
@@ -75,6 +101,8 @@ func TestBuildSchema(t *testing.T) {
 		usr := &UserMapObject{}
 		result := go_doc.BuildSchema(usr)
 		assert.NotEmpty(t, result)
+		assert.NotEmpty(t, result.Properties["user_mapper"])
+		assert.NotEmpty(t, result.Properties["user_mapper"].AdditionalProperties)
 
 		// raw, err := json.MarshalIndent(result, "", "	")
 		// assert.Nil(t, err)
@@ -82,9 +110,10 @@ func TestBuildSchema(t *testing.T) {
 	})
 
 	t.Run("test array", func(t *testing.T) {
-		data := &ListUser{}
+		data := ListUser{}
 		result := go_doc.BuildSchema(data)
 		assert.NotEmpty(t, result)
+		assert.NotEmpty(t, result.Items)
 
 		// raw, err := json.MarshalIndent(result, "", "	")
 		// assert.Nil(t, err)

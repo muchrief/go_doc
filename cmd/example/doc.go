@@ -24,7 +24,7 @@ func SetUpDocumentation(r *gin.Engine) go_doc.GoDocumentation {
 			},
 		}).
 		AddServer(&go_doc.ServerObject{
-			Url:         "http://localhost:8080",
+			// Url:         "http://localhost:3000",
 			Description: "Development Server",
 		}).
 		AddSecurity(go_doc.SecuritySchemaKeyOAuth2, &go_doc.SecuritySchemeObject{
